@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">幻之音</string>
+
+    <string name="play_ranking">Play Ranking</string>
+
+    <string name="recent_play">播放历史</string>
+    <string name="sort_by_artist">歌手分类</string>
+    <string name="settings">设置</string>
+</resources>

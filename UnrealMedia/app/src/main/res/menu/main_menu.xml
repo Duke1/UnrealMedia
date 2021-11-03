@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@mipmap/ic_loop_white_36dp"
+        android:title="Refresh"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_album"
+        android:icon="@mipmap/ic_launcher"
+        android:title="信息"
+        app:showAsAction="never" />
+
+
+</menu>

@@ -1,0 +1,23 @@
+ext {
+    compileSdkVersion = 30
+    buildToolsVersion = "30.0.3"
+
+    minSdkVersion = 21
+    targetSdkVersion = 30
+
+
+
+    versionCode = 100
+    versionName = "1.0.0"
+
+    lifecycleVersion = "2.3.1"
+
+    roomVersion = "2.3.0"
+
+    navVersion = "2.3.5"
+
+
+    frescoVersion = "2.5.0"
+
+    applicationId = "com.qfleng.um"
+}

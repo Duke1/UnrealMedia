@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0">
+
+    <path
+        android:name="star"
+        android:fillColor="@color/colorAccent"
+        android:pathData="M 12.0,2.0
+                                C 17.51915024494,2.0 22.0,6.48084975506 22.0,12.0
+                                C 22.0,17.51915024494 17.51915024494,22.0 12.0,22.0
+                                C 6.48084975506,22.0 2.0,17.51915024494 2.0,12.0
+                                C 2.0,6.48084975506 6.48084975506,2.0 12.0,2.0 "
+        android:strokeWidth="1"
+        android:strokeColor="@color/colorAccent" />
+
+    <group
+        android:name="pause_group"
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="6"
+        android:translateY="6">
+
+        <path
+            android:fillColor="#ffffff"
+            android:pathData="M6,19h4L10,5L6,5v14zM14,5v14h4L18,5h-4z" />
+    </group>
+</vector>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_audio_player"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.qfleng.um.fragment.MainFragment"
+        android:label="MainFragment">
+        <action
+            android:id="@+id/action_to_player"
+            app:destination="@id/audioPlayerActivity" />
+
+        <action
+            android:id="@+id/action_to_artistSortFragment"
+            app:destination="@id/artistSortFragment" />
+    </fragment>
+
+    <activity
+        android:id="@+id/audioPlayerActivity"
+        android:name="com.qfleng.um.audio.AudioPlayerActivity"
+        android:label="AudioPlayerActivity" />
+
+    <fragment
+        android:id="@+id/artistSortFragment"
+        android:name="com.qfleng.um.fragment.ArtistSortFragment"
+        android:label="ArtistSortFragment" />
+
+
+</navigation>
