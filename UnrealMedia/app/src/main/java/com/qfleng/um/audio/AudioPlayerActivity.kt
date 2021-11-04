@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException
 
 import com.qfleng.um.BaseActivity
 import com.qfleng.um.R
+import com.qfleng.um.UmApp
 import com.qfleng.um.audio.view.ILrcView
 import com.qfleng.um.audio.view.LrcView
 import com.qfleng.um.bean.MediaInfo
@@ -110,17 +111,17 @@ class AudioPlayerActivity : BaseActivity(), ILrcView {
 
         if (null == mediaInfo.cover) return
 
-        FrescoHelper.loadBitmap(mediaInfo.cover!!) {
+        val setBlurImage = fun(inBitmap: Bitmap) {
             doAsync(
                     asyncFunc = suspend {
-                        BitmapHelper.blurBitmap(this, it, 2.0F, 6)
+                        BitmapHelper.blurBitmap(this, inBitmap, 2.0F, 6)
                     },
                     observer = {
                         vBinding.mediaCoverView.setImageBitmap(it)
                     }
             )
 
-            androidx.palette.graphics.Palette.from(it).generate(object : androidx.palette.graphics.Palette.PaletteAsyncListener {
+            androidx.palette.graphics.Palette.from(inBitmap).generate(object : androidx.palette.graphics.Palette.PaletteAsyncListener {
                 override fun onGenerated(palette: androidx.palette.graphics.Palette?) {
                     if (null == palette) return
 
@@ -128,7 +129,20 @@ class AudioPlayerActivity : BaseActivity(), ILrcView {
                 }
 
             })
+
+
         }
+
+        FrescoHelper.loadBitmap(mediaInfo.cover!!,
+                onFailure = {
+                    val app = applicationContext as UmApp
+                    setBlurImage(app.rawImageLoader.loadImage(this, R.mipmap.ic_launcher)!!)
+                },
+                loadCallback = {
+                    setBlurImage(it)
+                }
+
+        )
 
     }
 

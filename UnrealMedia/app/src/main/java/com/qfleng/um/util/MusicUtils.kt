@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
 import com.qfleng.um.BuildConfig
+import com.qfleng.um.R
+import com.qfleng.um.UmApp
 
 import com.qfleng.um.bean.MediaInfo
 import java.io.FileDescriptor
@@ -100,7 +102,8 @@ object MusicUtils {
             //根据options参数，减少所需要的内存
             bm = BitmapFactory.decodeFileDescriptor(fd, null, options)
         } catch (e: FileNotFoundException) {
-            if (BuildConfig.DEBUG) e.printStackTrace()
+            val app = context.applicationContext as UmApp
+            bm = app.rawImageLoader.loadImage(context, R.mipmap.ic_launcher)
         }
 
         return bm

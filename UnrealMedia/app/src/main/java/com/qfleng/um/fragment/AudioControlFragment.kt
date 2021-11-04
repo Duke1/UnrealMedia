@@ -1,5 +1,8 @@
 package com.qfleng.um.fragment
 
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.LayoutInflater
@@ -19,6 +22,10 @@ import androidx.core.app.SharedElementCallback
 import androidx.fragment.app.activityViewModels
 import com.qfleng.um.R
 import com.qfleng.um.databinding.ViewPlayerControlBinding
+import com.qfleng.um.util.BitmapHelper
+import com.qfleng.um.util.FrescoHelper
+import com.qfleng.um.util.MusicUtils
+import com.qfleng.um.util.coroutines.doAsync
 
 
 /**
@@ -53,7 +60,9 @@ class AudioControlFragment : BaseFragment() {
             vBinding.mediaName.text = it.title
             vBinding.artistName.text = it.artist
 
-            vBinding.albumArtImageView.setImageURI(it.cover)
+
+            vBinding.albumArtImageView.setImageBitmap(MusicUtils.getBitmapFromUri(baseActivity, Uri.parse(it.cover)))
+
         })
         playManager.mediaPlayProgressLd.observe(this, Observer<Int> {
             vBinding.playSeekBar.progress = it

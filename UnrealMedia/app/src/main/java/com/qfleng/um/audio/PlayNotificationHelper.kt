@@ -13,6 +13,11 @@ import android.os.Build
 import androidx.media.session.MediaButtonReceiver
 
 
+/**
+ * 播放器通知栏
+ *
+ * <a href="https://developer.android.com/guide/topics/media-apps/mediabuttons?hl=zh-cn">响应媒体按钮</a>
+ */
 object PlayNotificationHelper {
     private const val CHANNEL_ID = "com.qfleng.um.audio.MUSIC_PLAY_CHANNEL"
 
@@ -60,9 +65,21 @@ object PlayNotificationHelper {
                 "Previous",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS))
 
-        builder.addAction(R.mipmap.ic_pause_white_36dp,
-                "Pause",
-                MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE))
+
+        when (controller.playbackState.state) {
+            PlaybackStateCompat.STATE_PLAYING -> {
+                builder.addAction(R.mipmap.ic_pause_white_36dp,
+                        "Pause",
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE))
+            }
+            PlaybackStateCompat.STATE_PAUSED -> {
+                builder.addAction(R.drawable.ic_play_white_36,
+                        "Pause",
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_PLAY_PAUSE))
+            }
+        }
+
+
         builder.addAction(R.mipmap.ic_skip_next_white_36dp,
                 "Next",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_SKIP_TO_NEXT))

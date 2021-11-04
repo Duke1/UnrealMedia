@@ -56,7 +56,7 @@ int SLAudioPlayer::put(AVFrame *frame) {
     if (av_frame_ref(out, frame) < 0)return -1;
     pthread_mutex_lock(&mutex);
     if (queue.size() == 5) {
-        LOGI("queue is full,wait for put frame:%d", queue.size());
+        //LOGI("queue is full,wait for put frame:%d", queue.size());
         pthread_cond_wait(&not_full, &mutex);
     }
     queue.push_back(out);
@@ -80,7 +80,7 @@ AVFrame *SLAudioPlayer::get() {
             if (queue.size() < 5)pthread_cond_signal(&not_full);
             pthread_mutex_unlock(&mutex);
             current_time = static_cast<int64_t>(av_q2d(time_base) * src->pts);
-            LOGI("get frame:%d,time:%" PRId64 ",change:%" PRId64, queue.size(), current_time, change);
+            //LOGI("get frame:%d,time:%" PRId64 ",change:%" PRId64, queue.size(), current_time, change);
             return src;
         }
     }
@@ -96,7 +96,7 @@ void SLAudioPlayer::decodeAudio() {
     int ret;
     int index = 0;
     while (isPlay) {
-        LOGI("decode frame:%d", index);
+        //LOGI("decode frame:%d", index);
         if (change) {
             initFilters();
         }
@@ -127,10 +127,10 @@ void SLAudioPlayer::decodeAudio() {
                 goto end;
             }
         }
-        LOGI("time:%lld,%lld,%lld", frame->pkt_dts, frame->pts, packet->pts);
+        //LOGI("time:%lld,%lld,%lld", frame->pkt_dts, frame->pts, packet->pts);
         while (av_buffersink_get_frame(sink, frame) >= 0) {
             frame->pts = packet->pts;
-            LOGI("put frame:%d,%lld,change:%d", index, frame->pts, change);
+            //LOGI("put frame:%d,%lld,change:%d", index, frame->pts, change);
             put(frame);
         }
         index++;

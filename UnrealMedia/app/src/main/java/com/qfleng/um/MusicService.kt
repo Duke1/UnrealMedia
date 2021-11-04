@@ -1,9 +1,6 @@
 package com.qfleng.um
 
 import android.net.Uri
-import android.os.Bundle
-import android.os.Handler
-import android.os.Message
 import android.support.v4.media.MediaBrowserCompat
 import androidx.media.MediaBrowserServiceCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -20,6 +17,7 @@ import com.qfleng.um.util.*
 import androidx.media.session.MediaButtonReceiver
 
 import android.content.Intent
+import android.os.*
 import android.view.KeyEvent
 
 
@@ -55,7 +53,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var mHandler: Handler
 
     init {
-        mHandler = object : Handler() {
+        mHandler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     1 -> {
@@ -75,7 +73,6 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     override fun onLoadChildren(parentId: String, result: MediaBrowserServiceCompat.Result<List<MediaBrowserCompat.MediaItem>>) {
-
     }
 
 
@@ -93,19 +90,22 @@ class MusicService : MediaBrowserServiceCompat() {
         mSession.setPlaybackState(playbackStateCompat)
 
         mSession.setCallback(object : MediaSessionCompat.Callback() {
-
             override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
-                Log.e("onMediaButtonEvent", "")
                 val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-                if (null != event) {
-                    Log.e("onMediaButtonEvent", "event:$event")
+                if (null != event && KeyEvent.ACTION_DOWN == event.action) {
                     when (event.keyCode) {
                         KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onSkipToPrevious()
                         KeyEvent.KEYCODE_MEDIA_NEXT -> onSkipToNext()
+                        KeyEvent.KEYCODE_MEDIA_PAUSE -> onPause()
+                        KeyEvent.KEYCODE_MEDIA_PLAY -> onPlay()
                         KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-
+                            when (playbackStateCompat.state) {
+                                PlaybackStateCompat.STATE_PLAYING -> onPause()
+                                PlaybackStateCompat.STATE_PAUSED -> onPlay()
+                            }
                         }
                         else -> {
+                            return super.onMediaButtonEvent(mediaButtonEvent)
                         }
                     }
                 }
@@ -120,6 +120,9 @@ class MusicService : MediaBrowserServiceCompat() {
                                 ?: "")
                         play()
                     }
+                    else -> {
+                        super.onCustomAction(action, extras)
+                    }
                 }
             }
 
@@ -127,11 +130,14 @@ class MusicService : MediaBrowserServiceCompat() {
                 audioPlayer.pause()
 
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
+
+                showPlayingNotification()
             }
 
             override fun onPlay() {
                 audioPlayer.play()
                 updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, audioPlayer.position())
+                showPlayingNotification()
             }
 
             override fun onStop() {
@@ -145,10 +151,9 @@ class MusicService : MediaBrowserServiceCompat() {
             }
 
             override fun onSkipToNext() {
-                Log.e("onSkipToNext", "${curPlayMediaInfo!!.toJsonString(true)}")
                 if (null == curPlayMediaInfo) return
-                var tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
-                if (tmpIndex > curPlayMediaInfo!!.size()) return
+                val tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
+                if (tmpIndex >= curPlayMediaInfo!!.size()) return
 
                 val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
 
@@ -159,7 +164,16 @@ class MusicService : MediaBrowserServiceCompat() {
             }
 
             override fun onSkipToPrevious() {
-                super.onSkipToPrevious()
+                if (null == curPlayMediaInfo) return
+                val tmpIndex = curPlayMediaInfo!!.index - 1//需要根据模式来
+                if (tmpIndex < 0) return
+
+                val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
+
+                if (null != mi) {
+                    curPlayMediaInfo!!.index = tmpIndex
+                    play()
+                }
             }
 
         })
@@ -175,10 +189,11 @@ class MusicService : MediaBrowserServiceCompat() {
         mHandler.postDelayed({ audioPlayer.play() }, 0)
 
         mSession.setMetadata(createMediaMetadata(pb))
-        showPlayingNotification()
 
         updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
         mHandler.sendEmptyMessage(1)
+        
+        showPlayingNotification()
     }
 
     private fun createMediaMetadata(mi: MediaInfo): MediaMetadataCompat {

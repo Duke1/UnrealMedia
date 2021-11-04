@@ -67,7 +67,7 @@ object FrescoHelper {
      * @param loadCallback bitmap,只在回调函数生命周期内有效
      * @see [Fresco API 说明](https://www.fresco-cn.org/docs/datasources-datasubscribers.html)
      */
-    fun loadBitmap(uri: String, loadCallback: (bitmap: Bitmap) -> Unit) {
+    fun loadBitmap(uri: String, onFailure: (() -> Unit)? = null, loadCallback: (bitmap: Bitmap) -> Unit) {
         if (TextUtils.isEmpty(uri)) return
         val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(uri))
                 .build()
@@ -75,6 +75,9 @@ object FrescoHelper {
         val dataSource = imagePipeline.fetchDecodedImage(request, null)
         dataSource.subscribe(object : BaseBitmapDataSubscriber() {
             override fun onFailureImpl(dataSource: DataSource<CloseableReference<CloseableImage>>) {
+                if (null != onFailure) {
+                    onFailure()
+                }
             }
 
             public override fun onNewResultImpl(bitmap: Bitmap?) {
