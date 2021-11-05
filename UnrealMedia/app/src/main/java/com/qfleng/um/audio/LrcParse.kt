@@ -12,8 +12,10 @@ class LrcParse {
 
     //mp3歌词存放地地方
     private var Path: String? = null
+
     //mp3时间
     private var currentTime: Long = 0
+
     //MP3对应时间的内容
     private var currentContent: String? = null
 
@@ -127,7 +129,7 @@ class LrcParse {
                     val groupCount = matcher.groupCount()
                     for (index in 0 until groupCount) {
                         val timeStr = matcher.group(index)
-                        Log.i("", "time[$index]=$timeStr")
+                        Log.i("LrcParse", "time[$index]=$timeStr")
                         if (index == 0) {
                             //将第二组中的内容设置为当前的一个时间点
                             currentTime = str2Long(timeStr.substring(1, timeStr.length - 1))
@@ -138,7 +140,7 @@ class LrcParse {
                     val content = pattern.split(str)
 
                     //将内容设置为当前内容，需要判断只出现时间的情况，没有内容的情况
-                    if (content.size == 0) {
+                    if (content.isEmpty()) {
                         currentContent = ""
                     } else {
                         currentContent = content[content.size - 1]
@@ -156,9 +158,12 @@ class LrcParse {
         return this.lrcInfo
     }
 
+    /**
+     * 时间标签的格式是[mm:ss.xx]，mm是分钟数，ss是秒数，xx是10ms数(某些歌词可能是三位数)
+     */
     private fun str2Long(timeStr: String): Long {
         //将时间格式为xx:xx.xx，返回的long要求以毫秒为单位
-        Log.i("", "timeStr=" + timeStr)
+        Log.i("LrcParse", "timeStr=" + timeStr)
         val s = timeStr.split("\\:".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val min = Integer.parseInt(s[0])
         var sec = 0
@@ -166,14 +171,17 @@ class LrcParse {
         if (s[1].contains(".")) {
             val ss = s[1].split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             sec = Integer.parseInt(ss[0])
-            mill = Integer.parseInt(ss[1])
-            Log.i("", "s[0]=" + s[0] + "s[1]" + s[1] + "ss[0]=" + ss[0] + "ss[1]=" + ss[1])
+
+            val sLen = ss[1].length
+            mill = if (2 == sLen) Integer.parseInt(ss[1]) * 10 else Integer.parseInt(ss[1])
+
+            Log.i("LrcParse", "s[0]=" + s[0] + "s[1]" + s[1] + "ss[0]=" + ss[0] + "ss[1]=" + ss[1])
         } else {
             sec = Integer.parseInt(s[1])
-            Log.i("", "s[0]=" + s[0] + "s[1]" + s[1])
+            Log.i("LrcParse", "s[0]=" + s[0] + "s[1]" + s[1])
         }
         //时间的组成
-        return (min * 60 * 1000 + sec * 1000 + mill * 10).toLong()
+        return (min * 60 * 1000 + sec * 1000 + mill).toLong()
     }
 
     companion object {

@@ -1,20 +1,20 @@
 package com.qfleng.um.adapter
 
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
+import com.qfleng.um.BaseActivity
 import com.qfleng.um.R
 import com.qfleng.um.UmApp
 import com.qfleng.um.audio.AudioPlayerActivity
 import com.qfleng.um.bean.MediaInfo
 import com.qfleng.um.databinding.ListGridLayoutItemBinding
 import com.qfleng.um.util.FrescoHelper
-import com.qfleng.um.util.MusicUtils
+import com.qfleng.um.util.dpToPx
 
 /**
  * Created by Duke
@@ -56,6 +56,9 @@ class MainMediaListAdapter constructor(val listener: (view: View, list: ArrayLis
         fun bind(mi: MediaInfo) {
             this.curBean = mi
 
+
+            val activity = itemView.context as BaseActivity
+
             vBinding.titleView.text = mi.title
             vBinding.subTitleView.text = mi.artist
 
@@ -67,15 +70,23 @@ class MainMediaListAdapter constructor(val listener: (view: View, list: ArrayLis
             }
 
 
+            vBinding.image.setPadding(0)
             FrescoHelper.loadBitmap(mi.cover ?: "",
                     loadCallback = {
-                        vBinding.image.setBackgroundColor(Color.WHITE)
-                        vBinding.image.setImageBitmap(it)
+                        activity.doOnUi {
+
+                            vBinding.image.setBackgroundColor(Color.WHITE)
+                            vBinding.image.setImageBitmap(it)
+                        }
                     },
                     onFailure = {
-                        val app = itemView.context.applicationContext as UmApp
-                        vBinding.image.setBackgroundColor(Color.LTGRAY)
-                        vBinding.image.setImageBitmap(app.rawImageLoader.loadImage(itemView.context, R.raw.music_note_white_48))
+                        activity.doOnUi {
+                            val app = itemView.context.applicationContext as UmApp
+                            vBinding.image.setBackgroundColor(Color.LTGRAY)
+                            vBinding.image.setPadding(dpToPx(itemView.context, 32f))
+                            vBinding.image.setImageBitmap(app.rawImageLoader.loadImage(itemView.context, R.raw.music_note_white_48))
+
+                        }
                     }
             )
         }

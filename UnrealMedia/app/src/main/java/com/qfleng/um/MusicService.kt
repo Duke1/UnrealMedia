@@ -1,24 +1,27 @@
 package com.qfleng.um
 
+import android.content.Context
 import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import androidx.media.MediaBrowserServiceCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.qfleng.um.audio.FFAudioPlayer
 import com.qfleng.um.audio.PlayNotificationHelper
-import com.qfleng.um.audio.lrc.SearchMusicResult
 import com.qfleng.um.bean.MediaInfo
 import com.qfleng.um.bean.PlayMediaInfo
 import com.qfleng.um.util.*
-import androidx.media.session.MediaButtonReceiver
 
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.*
+import android.util.Log
 import android.view.KeyEvent
+import com.qfleng.um.audio.MusicUtils
 
 
 /**
@@ -40,9 +43,36 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
 
-    val audioPlayer by lazy { FFAudioPlayer() }
-    lateinit var mSession: MediaSessionCompat
-    lateinit var playbackStateCompat: PlaybackStateCompat
+    private val audioPlayer by lazy { FFAudioPlayer() }
+    private lateinit var mSession: MediaSessionCompat
+    private lateinit var playbackStateCompat: PlaybackStateCompat
+    private val sysAudioManager by lazy { getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+
+    private val focusRequest by lazy {
+        AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).run {
+            setAudioAttributes(AudioAttributes.Builder().run {
+                setUsage(AudioAttributes.USAGE_GAME)
+                setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                build()
+            })
+            setAcceptsDelayedFocusGain(true)
+            setOnAudioFocusChangeListener { focusChange ->
+                when (focusChange) {
+                    AudioManager.AUDIOFOCUS_GAIN -> {
+                    }
+
+                    AudioManager.AUDIOFOCUS_LOSS -> {
+                        pause()
+                    }
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                    }
+                    AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                    }
+                }
+            }
+            build()
+        }
+    }
 
     var isPlaying = false
 
@@ -91,88 +121,96 @@ class MusicService : MediaBrowserServiceCompat() {
 
         mSession.setCallback(object : MediaSessionCompat.Callback() {
             override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
-                val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-                if (null != event && KeyEvent.ACTION_DOWN == event.action) {
-                    when (event.keyCode) {
-                        KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onSkipToPrevious()
-                        KeyEvent.KEYCODE_MEDIA_NEXT -> onSkipToNext()
-                        KeyEvent.KEYCODE_MEDIA_PAUSE -> onPause()
-                        KeyEvent.KEYCODE_MEDIA_PLAY -> onPlay()
-                        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-                            when (playbackStateCompat.state) {
-                                PlaybackStateCompat.STATE_PLAYING -> onPause()
-                                PlaybackStateCompat.STATE_PAUSED -> onPlay()
+                synchronized(audioPlayer) {
+                    val event = mediaButtonEvent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                    if (null != event && KeyEvent.ACTION_DOWN == event.action) {
+                        when (event.keyCode) {
+                            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> onSkipToPrevious()
+                            KeyEvent.KEYCODE_MEDIA_NEXT -> onSkipToNext()
+                            KeyEvent.KEYCODE_MEDIA_PAUSE -> onPause()
+                            KeyEvent.KEYCODE_MEDIA_PLAY -> onPlay()
+                            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                                when (playbackStateCompat.state) {
+                                    PlaybackStateCompat.STATE_PLAYING -> onPause()
+                                    PlaybackStateCompat.STATE_PAUSED -> onPlay()
+                                }
                             }
-                        }
-                        else -> {
-                            return super.onMediaButtonEvent(mediaButtonEvent)
+                            else -> {
+                                return super.onMediaButtonEvent(mediaButtonEvent)
+                            }
                         }
                     }
                 }
-
                 return true
             }
 
             override fun onCustomAction(action: String, extras: Bundle) {
-                when (action) {
-                    CA_PLAY_LIST -> {
-                        curPlayMediaInfo = gsonObjectFrom(PlayMediaInfo::class.java, extras.getString(_DATA)
-                                ?: "")
-                        play()
-                    }
-                    else -> {
-                        super.onCustomAction(action, extras)
+                synchronized(audioPlayer) {
+                    when (action) {
+                        CA_PLAY_LIST -> {
+                            curPlayMediaInfo = gsonObjectFrom(PlayMediaInfo::class.java, extras.getString(_DATA)
+                                    ?: "")
+                            play()
+                        }
+                        else -> {
+                            super.onCustomAction(action, extras)
+                        }
                     }
                 }
             }
 
             override fun onPause() {
-                audioPlayer.pause()
-
-                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
-
-                showPlayingNotification()
+                pause()
             }
 
             override fun onPlay() {
-                audioPlayer.play()
-                updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, audioPlayer.position())
-                showPlayingNotification()
+                synchronized(audioPlayer) {
+                    requestAudioFocus()
+
+                    audioPlayer.play()
+                    updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, audioPlayer.position())
+                    showPlayingNotification()
+                }
+
             }
 
             override fun onStop() {
-                audioPlayer.stop()
-                updatePlaybackState(PlaybackStateCompat.STATE_STOPPED)
+                stop()
             }
 
             override fun onSeekTo(pos: Long) {
-                super.onSeekTo(pos)
-                audioPlayer.seek(pos)
+                synchronized(audioPlayer) {
+                    audioPlayer.seek(pos)
+                }
             }
 
             override fun onSkipToNext() {
-                if (null == curPlayMediaInfo) return
-                val tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
-                if (tmpIndex >= curPlayMediaInfo!!.size()) return
+                synchronized(audioPlayer) {
+                    if (null == curPlayMediaInfo) return
+                    val tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
+                    if (tmpIndex >= curPlayMediaInfo!!.size()) return
 
-                val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
+                    val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
 
-                if (null != mi) {
-                    curPlayMediaInfo!!.index = tmpIndex
-                    play()
+                    if (null != mi) {
+                        curPlayMediaInfo!!.index = tmpIndex
+                        play()
+                    }
                 }
             }
 
             override fun onSkipToPrevious() {
-                if (null == curPlayMediaInfo) return
-                val tmpIndex = curPlayMediaInfo!!.index - 1//需要根据模式来
-                if (tmpIndex < 0) return
+                synchronized(audioPlayer) {
+                    if (null == curPlayMediaInfo) return
+                    val tmpIndex = curPlayMediaInfo!!.index - 1//需要根据模式来
+                    if (tmpIndex < 0) return
 
-                val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
+                    val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
 
-                if (null != mi) {
-                    curPlayMediaInfo!!.index = tmpIndex
-                    play()
+                    if (null != mi) {
+                        curPlayMediaInfo!!.index = tmpIndex
+                        play()
+                    }
                 }
             }
 
@@ -181,19 +219,36 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     private fun play() {
-
         val pb = curPlayMediaInfo?.findCurMedia() ?: return
         isPlaying = true
+
+        mSession.setMetadata(createMediaMetadata(pb))
 
         audioPlayer.setSource(pb.url!!)
         mHandler.postDelayed({ audioPlayer.play() }, 0)
 
-        mSession.setMetadata(createMediaMetadata(pb))
 
         updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
         mHandler.sendEmptyMessage(1)
-        
+
         showPlayingNotification()
+
+        requestAudioFocus()
+    }
+
+    private fun stop() {
+        synchronized(audioPlayer) {
+            audioPlayer.stop()
+            updatePlaybackState(PlaybackStateCompat.STATE_STOPPED)
+        }
+    }
+
+    private fun pause() {
+        synchronized(audioPlayer) {
+            audioPlayer.pause()
+            updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
+            showPlayingNotification()
+        }
     }
 
     private fun createMediaMetadata(mi: MediaInfo): MediaMetadataCompat {
@@ -226,5 +281,11 @@ class MusicService : MediaBrowserServiceCompat() {
         val builder = PlayNotificationHelper.generateNotification(this, mSession)
 
         NotificationManagerCompat.from(this).notify(1, builder.build())
+    }
+
+
+    private fun requestAudioFocus() {
+        sysAudioManager.abandonAudioFocusRequest(focusRequest)
+        val raf = sysAudioManager.requestAudioFocus(focusRequest)
     }
 }

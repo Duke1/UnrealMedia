@@ -5,15 +5,12 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Animatable
-import android.net.Uri
 import android.os.Bundle
 import android.os.storage.StorageManager
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Observer
@@ -29,7 +26,7 @@ import com.qfleng.um.bean.MediaInfo
 import com.qfleng.um.databinding.AudioPlayerLayoutBinding
 import com.qfleng.um.util.BitmapHelper
 import com.qfleng.um.util.FrescoHelper
-import com.qfleng.um.util.MusicUtils
+import com.qfleng.um.audio.MusicUtils
 import com.qfleng.um.util.ThemeHelper
 import com.qfleng.um.util.coroutines.doAsync
 import com.qfleng.um.viewmodel.AudioPlayerViewModel

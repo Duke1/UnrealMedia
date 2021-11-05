@@ -8,11 +8,17 @@ import kotlinx.parcelize.Parcelize
  * Created by Duke
  */
 @Parcelize
-class ArtistMedia : Parcelable {
+class ArtistMedia(var artistName: String = "",
+                  var artistCover: String = "",
+                  var medias: ArrayList<MediaInfo> = ArrayList()) : Parcelable {
 
-    var artistName: String = ""
-    var artistCover: String = ""
-    var medias: ArrayList<MediaInfo> = ArrayList()
 
+    override fun equals(other: Any?): Boolean {
+        if (other is ArtistMedia) {
+            return artistName.trim() == other.artistName.trim()
+        }
+
+        return super.equals(other)
+    }
 
 }

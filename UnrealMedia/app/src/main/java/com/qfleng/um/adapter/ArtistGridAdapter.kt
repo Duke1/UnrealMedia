@@ -1,17 +1,23 @@
 package com.qfleng.um.adapter
 
+import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.core.view.ViewCompat
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.qfleng.um.ArtistDetailActivity
+import com.qfleng.um.BaseActivity
 import com.qfleng.um.R
+import com.qfleng.um.UmApp
 import com.qfleng.um.bean.ArtistMedia
 import com.qfleng.um.databinding.ListGridLayoutItemBinding
-import com.qfleng.um.util.MusicUtils
+import com.qfleng.um.audio.MusicUtils
+import com.qfleng.um.util.FrescoHelper
+import com.qfleng.um.util.dpToPx
 
 /**
  * Created by Duke
@@ -65,19 +71,37 @@ class ArtistGridAdapter constructor(val listener: (view: View, bean: ArtistMedia
         fun bind(am: ArtistMedia) {
             this.curBean = am
 
+            val activity = itemView.context as BaseActivity
 
             vBinding.titleView.text = am.artistName
             vBinding.subTitleView.text = am.artistName
 
             ViewCompat.setTransitionName(vBinding.image, ArtistDetailActivity.TRANSITION_NAME)
 
-
-            if (am.artistCover.isNotEmpty())
-                vBinding.image.setImageBitmap(MusicUtils.getBitmapFromUri(itemView.context, Uri.parse(am.artistCover)))
-
             vBinding.root.setOnClickListener {
                 listener(vBinding.root, am, bindingAdapterPosition, vBinding.image)
             }
+
+
+
+            vBinding.image.setPadding(0)
+            FrescoHelper.loadBitmap(am.artistCover,
+                    loadCallback = {
+                        activity.doOnUi {
+                            vBinding.image.setBackgroundColor(Color.WHITE)
+                            vBinding.image.setImageBitmap(it)
+                        }
+                    },
+                    onFailure = {
+                        activity.doOnUi {
+                            val app = activity.applicationContext as UmApp
+                            vBinding.image.setBackgroundColor(Color.LTGRAY)
+                            vBinding.image.setPadding(dpToPx(activity, 32f))
+                            vBinding.image.setImageBitmap(app.rawImageLoader.loadImage(activity, R.raw.music_note_white_48))
+                        }
+
+                    }
+            )
         }
 
     }

@@ -11,6 +11,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.MutableLiveData
+import com.qfleng.um.BuildConfig
 import com.qfleng.um.MusicService
 import com.qfleng.um.bean.MediaInfo
 import com.qfleng.um.bean.PlayMediaInfo
@@ -89,7 +90,8 @@ class AudioPlayManager private constructor() {
                 val media = metadata.bundle.getString(MusicService.KEY_MEDIA_INFO_STR)
                 val mediaInfo: MediaInfo? = ctx.objectFrom(MediaInfo::class.java, media ?: "")
 
-                if (null != mediaInfo) mediaInfoLd.postValue(mediaInfo!!)
+                if (null != mediaInfo && mediaInfo != mediaInfoLd.value)
+                    mediaInfoLd.postValue(mediaInfo!!)
             }
         }
     }
@@ -126,14 +128,21 @@ class AudioPlayManager private constructor() {
      * @param checkSame 检查是否同一多媒体
      */
     fun play(ctx: Context, index: Int, list: ArrayList<MediaInfo>, checkSame: Boolean = true) {
-//        val playMediaInfo = mediaInfoLd.value
-//        if (checkSame && null != playMediaInfo && playMediaInfo == mediaInfo) {
-//            return
-//        }
+        try {
+            val curMi = list[index]
+            val playMediaInfo = mediaInfoLd.value
+            if (checkSame && null != playMediaInfo && playMediaInfo == curMi) {
+                return
+            }
 
-        startPlay(list, index)
+            mediaInfoLd.postValue(curMi)
 
-//        saveLastPlayAudio(ctx, mediaInfo)
+            startPlay(list, index)
+
+            saveLastPlayAudio(ctx, curMi)
+        } catch (e: Exception) {
+            if (BuildConfig.DEBUG) e.printStackTrace()
+        }
     }
 
     private fun startPlay(list: ArrayList<MediaInfo>, index: Int) {

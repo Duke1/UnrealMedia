@@ -2,6 +2,7 @@ package com.qfleng.um
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
@@ -12,7 +13,7 @@ import com.qfleng.um.fragment.AudioControlFragment
 
 
 open class BaseActivity : AppCompatActivity() {
-    protected var handler = Handler()
+    val handler = Handler(Looper.getMainLooper())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +50,11 @@ open class BaseActivity : AppCompatActivity() {
 
         }
 
+    }
+
+
+    fun doOnUi(func: () -> Unit) {
+        handler.post { func() }
     }
 
 }

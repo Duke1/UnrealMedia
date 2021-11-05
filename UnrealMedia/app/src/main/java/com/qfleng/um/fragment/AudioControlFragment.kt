@@ -1,7 +1,5 @@
 package com.qfleng.um.fragment
 
-import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
@@ -22,10 +20,7 @@ import androidx.core.app.SharedElementCallback
 import androidx.fragment.app.activityViewModels
 import com.qfleng.um.R
 import com.qfleng.um.databinding.ViewPlayerControlBinding
-import com.qfleng.um.util.BitmapHelper
-import com.qfleng.um.util.FrescoHelper
-import com.qfleng.um.util.MusicUtils
-import com.qfleng.um.util.coroutines.doAsync
+import com.qfleng.um.audio.MusicUtils
 
 
 /**

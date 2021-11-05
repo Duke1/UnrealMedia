@@ -1,4 +1,4 @@
-package com.qfleng.um.util
+package com.qfleng.um.audio
 
 import android.content.ContentUris
 import android.content.Context
@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
-import com.qfleng.um.BuildConfig
 import com.qfleng.um.R
 import com.qfleng.um.UmApp
 
@@ -97,7 +96,7 @@ object MusicUtils {
 
             options.inJustDecodeBounds = false
             options.inDither = false
-            options.inPreferredConfig = Bitmap.Config.RGB_565
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
             //根据options参数，减少所需要的内存
             bm = BitmapFactory.decodeFileDescriptor(fd, null, options)
@@ -135,4 +134,6 @@ object MusicUtils {
         }
         return min + ":" + sec.trim { it <= ' ' }.substring(0, 2)
     }
+
+
 }

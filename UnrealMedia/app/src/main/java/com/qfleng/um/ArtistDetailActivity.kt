@@ -2,21 +2,23 @@ package com.qfleng.um
 
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.ActionBar
 import androidx.core.app.ActivityOptionsCompat
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.qfleng.um.adapter.ArtistMediaListAdapter
 import com.qfleng.um.audio.AudioPlayManager
+import com.qfleng.um.audio.MusicUtils
 import com.qfleng.um.bean.ArtistMedia
 import com.qfleng.um.bean.MediaInfo
 import com.qfleng.um.databinding.ActivityArtistDetailBinding
 import com.qfleng.um.util.BitmapHelper
-import com.qfleng.um.util.FrescoHelper
 import com.qfleng.um.util.ThemeHelper
 import com.qfleng.um.util.coroutines.doAsync
 import com.qfleng.um.view.RecyclerListView
@@ -67,16 +69,35 @@ class ArtistDetailActivity : BaseActivity() {
 
 
 //            artistCoverView.setImageURI(artistMedia!!.artistCover)
-        FrescoHelper.loadBitmap(artistMedia!!.artistCover) {
-            doAsync(
-                    asyncFunc = suspend {
-                        BitmapHelper.blurBitmap(this, it, 3.0F, 8)
-                    },
-                    observer = {
-                        vBinding.artistCoverView.setImageBitmap(it)
+
+        doAsync(
+                asyncFunc = suspend {
+                    var bitmap = MusicUtils.getBitmapFromUri(this, Uri.parse(artistMedia!!.artistCover))
+
+                    if (null != bitmap && !bitmap.isRecycled) {
+                        bitmap = BitmapHelper.blurBitmap(this, bitmap, 3.0F, 8)
+
+//
+//                        doOnUi {
+//                            Palette.from(bitmap).generate(object : Palette.PaletteAsyncListener {
+//                                override fun onGenerated(palette: Palette?) {
+//                                    if (null == palette) return
+//
+//                                    vBinding.toolbarView.setTitleTextColor(palette.getDarkVibrantColor(Color.WHITE))
+//                                }
+//
+//                            })
+//                        }
                     }
-            )
-        }
+                    bitmap
+                },
+                observer = {
+                    vBinding.artistCoverView.setImageBitmap(it)
+
+
+                }
+        )
+
 
 
         vBinding.listView.adapter = mediaListAdapter
