@@ -22,6 +22,7 @@ extern "C" {
 class SLAudioPlayer {
 public:
     SLAudioPlayer(char **pathArr, int len);
+
     ~SLAudioPlayer();
 
 

@@ -51,7 +51,8 @@ class ArtistMediaListAdapter constructor(val listener: (view: View, list: ArrayL
 
         init {
             vBinding.moreOptMenu.setOnClickListener { view ->
-                PopupMenuHelper.showMusicMenu(itemView.context, view)
+                if (null == curBean) return@setOnClickListener
+                PopupMenuHelper.showMusicMenu(itemView.context as BaseActivity, view, curBean!!)
             }
         }
 

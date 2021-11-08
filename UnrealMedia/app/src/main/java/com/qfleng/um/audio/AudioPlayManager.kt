@@ -131,7 +131,7 @@ class AudioPlayManager private constructor() {
         try {
             val curMi = list[index]
             val playMediaInfo = mediaInfoLd.value
-            if (checkSame && null != playMediaInfo && playMediaInfo == curMi) {
+            if (checkSame && null != playMediaInfo && playMediaInfo == curMi && PlaybackStateCompat.STATE_PLAYING == supportMediaController.playbackState.state) {
                 return
             }
 

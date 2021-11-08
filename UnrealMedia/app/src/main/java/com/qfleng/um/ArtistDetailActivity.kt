@@ -75,8 +75,10 @@ class ArtistDetailActivity : BaseActivity() {
                     var bitmap = MusicUtils.getBitmapFromUri(this, Uri.parse(artistMedia!!.artistCover))
 
                     if (null != bitmap && !bitmap.isRecycled) {
-                        bitmap = BitmapHelper.blurBitmap(this, bitmap, 3.0F, 8)
+                        val blurBitmap = BitmapHelper.blurBitmap(this, bitmap, 3.0F, 8)
 
+                        bitmap.recycle()
+                        bitmap = blurBitmap
 //
 //                        doOnUi {
 //                            Palette.from(bitmap).generate(object : Palette.PaletteAsyncListener {

@@ -88,7 +88,12 @@ class MusicService : MediaBrowserServiceCompat() {
                 when (msg.what) {
                     1 -> {
                         if (PlaybackStateCompat.STATE_PLAYING == playbackStateCompat.state) {
-                            updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, audioPlayer.position(), 1.0f)
+                            val curPosition = audioPlayer.position()
+                            if (curPosition >= audioPlayer.duration()) {
+                                skipToNext()
+                            } else {
+                                updatePlaybackState(PlaybackStateCompat.STATE_PLAYING, curPosition, 1.0f)
+                            }
                         }
 
                         mHandler.sendEmptyMessageDelayed(1, 1000)
@@ -185,18 +190,7 @@ class MusicService : MediaBrowserServiceCompat() {
             }
 
             override fun onSkipToNext() {
-                synchronized(audioPlayer) {
-                    if (null == curPlayMediaInfo) return
-                    val tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
-                    if (tmpIndex >= curPlayMediaInfo!!.size()) return
-
-                    val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
-
-                    if (null != mi) {
-                        curPlayMediaInfo!!.index = tmpIndex
-                        play()
-                    }
-                }
+                skipToNext()
             }
 
             override fun onSkipToPrevious() {
@@ -248,6 +242,21 @@ class MusicService : MediaBrowserServiceCompat() {
             audioPlayer.pause()
             updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
             showPlayingNotification()
+        }
+    }
+
+    private fun skipToNext() {
+        synchronized(audioPlayer) {
+            if (null == curPlayMediaInfo) return
+            val tmpIndex = curPlayMediaInfo!!.index + 1//需要根据模式来
+            if (tmpIndex >= curPlayMediaInfo!!.size()) return
+
+            val mi = curPlayMediaInfo!!.findCurMedia(tmpIndex)
+
+            if (null != mi) {
+                curPlayMediaInfo!!.index = tmpIndex
+                play()
+            }
         }
     }
 

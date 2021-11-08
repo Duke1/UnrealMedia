@@ -80,10 +80,12 @@ AVFrame *SLAudioPlayer::get() {
             if (queue.size() < 5)pthread_cond_signal(&not_full);
             pthread_mutex_unlock(&mutex);
             current_time = static_cast<int64_t>(av_q2d(time_base) * src->pts);
-            //LOGI("get frame:%d,time:%" PRId64 ",change:%" PRId64, queue.size(), current_time, change);
+            //LOGI("get frame:%d,time:%" PRId64 ",change:%" PRId64 ",total:%" PRId64, queue.size(), current_time, change,total_time);
             return src;
         }
     }
+
+    current_time = total_time;
     pthread_mutex_unlock(&mutex);
     return NULL;
 }
@@ -176,6 +178,7 @@ void SLAudioPlayer::play() {
 void SLAudioPlayer::pause() {
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PAUSED);
 }
+
 
 int SLAudioPlayer::createPlayer() {
     //创建播放器
