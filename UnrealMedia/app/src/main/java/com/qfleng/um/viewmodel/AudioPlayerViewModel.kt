@@ -35,7 +35,10 @@ class AudioPlayerViewModel : ViewModel() {
         doAsync(
                 asyncFunc = suspend {
                     var result = ""
-                    val searchLyricResult = gsonObjectFrom(SearchMusicResult::class.java, OkHttpReq.instance.get(url)
+
+                    val req = OkHttpReq.getChromeRequestBuilder().url(url).get().build()
+
+                    val searchLyricResult = gsonObjectFrom(SearchMusicResult::class.java, OkHttpReq.instance.executeRequest(req)
                             ?: "")
 
                     if (null != searchLyricResult?.result?.songs && 200 == searchLyricResult.code) {
@@ -71,7 +74,9 @@ class AudioPlayerViewModel : ViewModel() {
 
 //                        val lrcUrl = "https://lyrics.kugou.com/download?ver=1&client=pc&id=${candidates.id}&accesskey=${candidates.accesskey}&fmt=lrc&charset=utf8"
                             val lrcUrl = "https://music.163.com/api/song/lyric?id=${song.id}&lv=1&kv=1&tv=-1"
-                            val kuGouLyric = gsonObjectFrom(NetLyric::class.java, OkHttpReq.instance.get(lrcUrl)
+
+                            val req2 = OkHttpReq.getChromeRequestBuilder().url(lrcUrl).get().build()
+                            val kuGouLyric = gsonObjectFrom(NetLyric::class.java, OkHttpReq.instance.executeRequest(req2)
                                     ?: "")
 
                             result = kuGouLyric?.lrc?.lyric

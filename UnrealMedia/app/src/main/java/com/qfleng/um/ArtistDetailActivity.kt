@@ -77,7 +77,6 @@ class ArtistDetailActivity : BaseActivity() {
                     if (null != bitmap && !bitmap.isRecycled) {
                         val blurBitmap = BitmapHelper.blurBitmap(this, bitmap, 3.0F, 8)
 
-                        bitmap.recycle()
                         bitmap = blurBitmap
 //
 //                        doOnUi {

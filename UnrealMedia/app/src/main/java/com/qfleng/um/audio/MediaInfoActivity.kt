@@ -17,6 +17,7 @@ import com.qfleng.um.util.BitmapHelper
 import com.qfleng.um.util.ThemeHelper
 import com.qfleng.um.util.coroutines.doAsync
 import com.qfleng.um.util.dpToPx
+import java.text.SimpleDateFormat
 
 /**
  * 歌曲信息
@@ -84,11 +85,15 @@ class MediaInfoActivity : BaseActivity() {
 
             vBinding.infoView.append("标题：${metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)}")
             vBinding.infoView.append("\r\n")
-            vBinding.infoView.append("时长：${metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)}")
+
+            val duration = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            vBinding.infoView.append("时长：${SimpleDateFormat("mm:ss").format(duration?.toLong())}")
             vBinding.infoView.append("\r\n")
             vBinding.infoView.append("类型：${metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)}")
             vBinding.infoView.append("\r\n")
             vBinding.infoView.append("比特率：${metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)}")
+            vBinding.infoView.append("\r\n")
+            vBinding.infoView.append("采样率：${metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_SAMPLERATE)} Hz")
             vBinding.infoView.append("\r\n")
 
 
