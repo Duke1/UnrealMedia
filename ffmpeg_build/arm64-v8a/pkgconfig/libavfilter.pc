@@ -1,0 +1,14 @@
+prefix=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/arm64-v8a
+includedir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/include
+
+Name: libavfilter
+Description: FFmpeg audio/video filtering library
+Version: 8.15.100
+Requires: 
+Requires.private: libavformat >= 59.8.100, libavcodec >= 59.12.100, libswresample >= 4.0.100, libavutil >= 57.7.100
+Conflicts:
+Libs: -L${libdir}  -lavfilter 
+Libs.private: -pthread -lm
+Cflags: -I${includedir}

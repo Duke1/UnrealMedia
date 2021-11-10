@@ -41,6 +41,5 @@ captures/
 
 /ffmpeg
 /android-libs
-/ffmpeg_build
 /toolchain
 *.bz2

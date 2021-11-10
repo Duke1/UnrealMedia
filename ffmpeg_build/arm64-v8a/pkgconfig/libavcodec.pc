@@ -1,0 +1,14 @@
+prefix=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/arm64-v8a
+includedir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 59.12.100
+Requires: 
+Requires.private: libavutil >= 57.7.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: -pthread -lm
+Cflags: -I${includedir}

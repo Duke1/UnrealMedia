@@ -1,0 +1,14 @@
+prefix=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/arm64-v8a
+includedir=/Users/lixiaoyao/Documents/developer/UnrealMedia/ffmpeg_build/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 57.7.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil 
+Libs.private: -pthread -lm
+Cflags: -I${includedir}
