@@ -1,6 +1,8 @@
 package com.qfleng.um
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.*
 import androidx.activity.viewModels
@@ -11,6 +13,7 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import com.qfleng.um.databinding.ActivityMainBinding
 import com.qfleng.um.viewmodel.MainViewModel
+import permissions.dispatcher.ktx.constructPermissionsRequest
 
 
 /**
@@ -36,6 +39,38 @@ class MainActivity : BaseActivity() {
     private val mainViewModel by viewModels<MainViewModel>()
     val vBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
+    private val permissionsRequester by lazy {
+
+        val permissions = mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
+                permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+            }
+        }
+
+        constructPermissionsRequest(
+            *permissions.toTypedArray() ,
+            onPermissionDenied = ::onPermissionDenied ,
+            onNeverAskAgain = onNeverAskAgain ,
+            requiresPermission = ::initData ,
+        )
+
+    }
+
+    private fun onPermissionDenied() {
+
+    }
+
+    private val onNeverAskAgain: () -> Unit = {
+
+    }
+
+    private fun initData() {
+        mainViewModel.loadMedias(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -44,21 +79,18 @@ class MainActivity : BaseActivity() {
         setupnavView(vBinding.navView)
 
 
-        PermissionsManager.requestAllNeedPermissions(this)
-
-        mainViewModel.loadMedias(this)
+        permissionsRequester.launch()
 
 
+        navController = findNavController(this , R.id.my_nav_host_fragment)
 
-        navController = findNavController(this, R.id.my_nav_host_fragment)
-//        NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
+        //NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
     }
 
     override fun onSupportNavigateUp() = navController.navigateUp()
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        super.onCreateOptionsMenu(menu)
-        menuInflater.inflate(R.menu.main_menu, menu)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean { //        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.main_menu , menu)
         return true
     }
 
@@ -69,7 +101,7 @@ class MainActivity : BaseActivity() {
                 return true
             }
             R.id.action_refresh -> {
-                mainViewModel.loadMedias(this, false)
+                mainViewModel.loadMedias(this , false)
             }
 
 
@@ -96,7 +128,7 @@ class MainActivity : BaseActivity() {
 
                 when (item.itemId) {
                     R.id.nav_about -> {
-                        startActivity(Intent(this@MainActivity, AboutActivity::class.java))
+                        startActivity(Intent(this@MainActivity , AboutActivity::class.java))
                     }
                     R.id.nav_sort_by_artist -> {
                         if (navController.currentDestination!!.id != R.id.artistSortFragment) {
@@ -109,7 +141,7 @@ class MainActivity : BaseActivity() {
                         }
                     }
                     R.id.nav_settings -> {
-                        startActivity(Intent(this@MainActivity, SettingActivity::class.java))
+                        startActivity(Intent(this@MainActivity , SettingActivity::class.java))
                     }
                 }
                 return true

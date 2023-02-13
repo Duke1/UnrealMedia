@@ -1,11 +1,11 @@
 package com.qfleng.um
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import com.qfleng.um.databinding.ActivityAboutBinding
-import com.qfleng.um.util.ThemeHelper
 
 /**
  * Created by Duke
@@ -22,8 +22,16 @@ class AboutActivity : BaseActivity() {
 
         setupNavigationView()
 
-        vBinding.ffmpegText.movementMethod = ScrollingMovementMethod.getInstance();
-        vBinding.ffmpegText.text = FFmpeg().getFFmpegInfo()
+        vBinding.run {
+            itemPlugins.setOnClickListener {
+                startActivity(Intent(this@AboutActivity , PluginsInfoActivity::class.java))
+            }
+            itemIcons8.setOnClickListener{
+                val uri = Uri.parse("https://icons8.com/")
+                val intent = Intent(Intent.ACTION_VIEW , uri)
+                startActivity(intent)
+            }
+        }
     }
 
 
@@ -31,8 +39,7 @@ class AboutActivity : BaseActivity() {
 
         setSupportActionBar(vBinding.toolbarView)
         var ab: ActionBar? = supportActionBar
-        if (null != ab) {
-//            ab.setHomeAsUpIndicator(R.drawable.ic_menu)
+        if (null != ab) { //            ab.setHomeAsUpIndicator(R.drawable.ic_menu)
             ab.setDisplayHomeAsUpEnabled(true)
             ab.setDisplayShowTitleEnabled(true)
 

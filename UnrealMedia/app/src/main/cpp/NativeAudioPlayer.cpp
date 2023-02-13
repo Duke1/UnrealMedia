@@ -77,14 +77,13 @@ NativeAudioPlayer::NativeAudioPlayer() {
 }
 
 NativeAudioPlayer::~NativeAudioPlayer() {
-    if (player)
-        delete player;
+    delete player;
+    player = nullptr;
 }
 
 
 void NativeAudioPlayer::setSource(char *uri) {
-    if (player)
-        delete player;
+    delete player;
 
     char **pathArr = (char **) malloc(1 * sizeof(char *));
     int i = 0;
@@ -105,11 +104,10 @@ void NativeAudioPlayer::pause() {
 }
 
 void NativeAudioPlayer::stop() {
-    if (player)
-        delete player;
+    delete player;
+    player = nullptr;
 }
 
 void NativeAudioPlayer::seek(int64_t pos) {
-    if(player)
-        player->seek(pos);
+    if (player) player->seek(pos);
 }

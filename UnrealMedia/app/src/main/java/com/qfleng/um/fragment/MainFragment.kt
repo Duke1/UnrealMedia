@@ -44,13 +44,13 @@ class MainFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        mainViewModel.mediaLd.observe(this, Observer<ArrayList<MediaInfo>> {
+        mainViewModel.mediaLd.observe(viewLifecycleOwner) {
             adapter.list.clear()
             adapter.list.addAll(it)
             adapter.notifyDataSetChanged()
 
             mainViewModel.loadLastPlayInfo(baseActivity)
-        })
+        }
 
         adapter = MainMediaListAdapter { view, list, position, pair ->
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg && \
 
+android_api_level=33
+arch_name=aarch64
 
 CUR_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd )
 OUT_DIR=${CUR_DIR}/ffmpeg_build
@@ -24,11 +26,13 @@ fi
 
 TOOLCHAIN_PREFIX="${NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin"
 
-export CROSS_PREFIX=${TOOLCHAIN_PREFIX}/aarch64-linux-android31
+export CROSS_PREFIX=${TOOLCHAIN_PREFIX}/${arch_name}-linux-android${android_api_level}
 export AR=${TOOLCHAIN_PREFIX}/llvm-ar
 export NM=${TOOLCHAIN_PREFIX}/llvm-nm
 export STRIP=${TOOLCHAIN_PREFIX}/llvm-strip
 export RANLIB=${TOOLCHAIN_PREFIX}/llvm-ranlib
+export CC=${CROSS_PREFIX}-clang
+export CXX=${CROSS_PREFIX}-clang++
 
 
 cd ffmpeg &&\
@@ -37,11 +41,12 @@ cd ffmpeg &&\
 ./configure \
     --prefix=${OUT_DIR} \
     --libdir=${OUT_DIR}/arm64-v8a \
-    --arch=aarch64 \
+    --arch=${arch_name} \
     --cpu=armv8-a \
-    --arch=aarch64 \
     --nm=${NM} \
     --ar=${AR} \
+    --cc=${CC} \
+    --cxx=${CXX} \
     --ranlib=${RANLIB} \
     --strip=${STRIP} \
     --cross-prefix=${CROSS_PREFIX}- \
@@ -68,10 +73,13 @@ cd ffmpeg &&\
     --disable-outdevs \
     --enable-small \
     --enable-jni\
+    --disable-vulkan \
     && \
 make clean && \
 make -j4 && \
 make install
+
+echo -e "\033[32m 编译完成 \033[0m" 
 
 
 #./configure --list-decoders  查看支持的解码器

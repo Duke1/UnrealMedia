@@ -40,7 +40,7 @@ SLAudioPlayer::SLAudioPlayer(char **pathArr, int len) {
     initSwrContext();
     initFilters();
 
-    outBuffer =  (uint8_t *) av_malloc(max_audio_frame_size);
+    outBuffer = (uint8_t *) av_malloc(max_audio_frame_size);
 
     createPlayer();
 
@@ -108,6 +108,7 @@ void SLAudioPlayer::decodeAudio() {
             av_frame_unref(frame);
 
             AVFormatContext *fmt_ctx = fmt_ctx_arr[i];
+            //读取待解码数据包
             ret = av_read_frame(fmt_ctx, packet);
             if (packet->stream_index != stream_index_arr[i])continue;
             if (ret < 0) {
@@ -115,10 +116,12 @@ void SLAudioPlayer::decodeAudio() {
                 goto end;
             }
 
+            //将待解码数据AVPacket送入解码器
             ret = avcodec_send_packet(codec_ctx_arr[i], packet);
             if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
                 goto end;
 
+            //接收解码之后的数据
             ret = avcodec_receive_frame(codec_ctx_arr[i], frame);
             if (ret < 0 && ret != AVERROR_EOF)
                 goto end;
@@ -205,7 +208,8 @@ int SLAudioPlayer::createPlayer() {
                             SL_PCMSAMPLEFORMAT_FIXED_16,
                             SL_PCMSAMPLEFORMAT_FIXED_16,
                             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,//
-                            SL_BYTEORDER_LITTLEENDIAN};
+                            SL_BYTEORDER_LITTLEENDIAN,
+    };
 
     SLDataSource slDataSource = {&android_queue, &pcm};
 
@@ -343,7 +347,7 @@ int SLAudioPlayer::initFilters() {
     if ((err_code = avfilter_graph_config(graph, NULL)) < 0) {
         char buf[1024];
         av_strerror(err_code, buf, 1024);
-        LOGE("error config graph : %s",buf);
+        LOGE("error config graph : %s", buf);
         return -1;
     }
     LOGI("init filter success");

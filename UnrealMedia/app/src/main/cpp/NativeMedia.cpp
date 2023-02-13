@@ -13,19 +13,35 @@ extern "C" {
 
 const char *className = "com/qfleng/um/FFmpeg";
 
+void readVersion(unsigned int ver, char *dstArr) {
+    unsigned int ver_major, ver_minor, ver_micro;
+    ver_major = (ver >> 16) & 0xff;
+    ver_minor = (ver >> 8) & 0xff;
+    ver_micro = (ver) & 0xff;
+
+    sprintf(dstArr, "%d.%d.%d", ver_major, ver_minor, ver_micro);
+}
+
+
 jstring getFFmpegInfo(JNIEnv *env, jobject /* this */) {
-    char info[10000] = {0};
-    sprintf(info,
-            "ffmpeg version %s\r\n\r\navcodec:\n\t%s , version-%d \r\n avutil:\n\t%s,version-%d\r\n\r\nswresample:\n\t%s,version-%d",
-            av_version_info(),
-            avcodec_license(),
-            avcodec_version(),
-            avutil_license(),
-            avutil_version(),
-            swresample_license(),
-            swresample_version()
-    );
-    return env->NewStringUTF(info);
+    char tmp[20] = {0};
+
+    std::string info;
+    info.append("ffmpeg version：");
+    info.append(av_version_info());
+    info.append("\n\n");
+
+    readVersion(avcodec_version(),tmp);
+    info.append("avcodec version: ");
+    info.append(tmp);
+    info.append("\n");
+
+    readVersion(avutil_version(),tmp);
+    info.append("avutil version: ");
+    info.append(tmp);
+    info.append("\n");
+
+    return env->NewStringUTF(info.c_str());
 }
 
 JavaVM *localJVM = NULL;
@@ -33,7 +49,7 @@ jobject localNewFFmpegObj = NULL;
 
 
 static JNINativeMethod methods[] = {
-        {"getFFmpegInfo",                "()Ljava/lang/String;",  (void *) getFFmpegInfo}
+        {"getFFmpegInfo", "()Ljava/lang/String;", (void *) getFFmpegInfo}
 };
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {

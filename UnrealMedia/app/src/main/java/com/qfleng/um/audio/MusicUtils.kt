@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import com.qfleng.um.R
 import com.qfleng.um.UmApp
 
@@ -28,20 +29,25 @@ object MusicUtils {
         if (null == context) return musicInfos
 
         val cursor = context.contentResolver.query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                null, null, null,
-                MediaStore.Audio.Media.DEFAULT_SORT_ORDER)
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI ,
+            null ,
+            null ,
+            null ,
+            MediaStore.Audio.Media.IS_MUSIC //MediaStore.Audio.Media.DEFAULT_SORT_ORDER ,
+        )
 
 
         if (null != cursor) {
+            Log.i("MusicUtils" , "MusicUtils count:${cursor.count}")
             while (cursor.moveToNext()) {
-
                 val musicInfo = MediaInfo()
                 val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID)) // 音乐id
                 val title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)) // 音乐标题
                 val artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)) // 艺术家
                 val album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)) // 专辑
-                val albumId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)).toLong()
+                val albumId = cursor
+                    .getInt(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID))
+                    .toLong()
                 val duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)) // 时长
                 val size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE)) // 文件大小
                 val url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)) // 文件路径
@@ -57,7 +63,7 @@ object MusicUtils {
                     musicInfo.size = size
                     musicInfo.url = url
 
-                    musicInfo.cover = getCoverFromFile(id, albumId)
+                    musicInfo.cover = getCoverFromFile(id , albumId)
                     musicInfos.add(musicInfo)
                 }
             }
@@ -68,26 +74,26 @@ object MusicUtils {
     }
 
 
-    fun getCoverFromFile(songid: Long, albumid: Long): String {
+    fun getCoverFromFile(songid: Long , albumid: Long): String {
         var uri: Uri
         if (albumid < 0) {
             uri = Uri.parse("content://media/external/audio/media/" + songid + "/albumart")
         } else {
-            uri = ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), albumid)
+            uri = ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart") , albumid)
         }
 
         return uri.toString()
     }
 
 
-    fun getBitmapFromUri(context: Context?, uri: Uri): Bitmap? {
+    fun getBitmapFromUri(context: Context? , uri: Uri): Bitmap? {
         if (null == context) return null
 
         var bm: Bitmap? = null
         try {
             val options = BitmapFactory.Options()
             var fd: FileDescriptor? = null
-            val pfd = context.contentResolver.openFileDescriptor(uri, "r")
+            val pfd = context.contentResolver.openFileDescriptor(uri , "r")
             if (pfd != null) {
                 fd = pfd.fileDescriptor
             }
@@ -99,10 +105,10 @@ object MusicUtils {
             options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
             //根据options参数，减少所需要的内存
-            bm = BitmapFactory.decodeFileDescriptor(fd, null, options)
+            bm = BitmapFactory.decodeFileDescriptor(fd , null , options)
         } catch (e: FileNotFoundException) {
             val app = context.applicationContext as UmApp
-            bm = app.rawImageLoader.loadImage(context, R.mipmap.ic_launcher)
+            bm = app.rawImageLoader.loadImage(context , R.mipmap.ic_launcher)
         }
 
         return bm
@@ -132,7 +138,9 @@ object MusicUtils {
         } else if (sec.length == 1) {
             sec = "0000" + time % (1000 * 60) + ""
         }
-        return min + ":" + sec.trim { it <= ' ' }.substring(0, 2)
+        return min + ":" + sec
+            .trim { it <= ' ' }
+            .substring(0 , 2)
     }
 
 
